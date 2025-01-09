@@ -1,0 +1,15 @@
+﻿@page
+@model WeatherApp.Pages.WeatherModel
+@{
+    ViewData["Title"] = "Weather";
+    }
+
+<h1 >Weather Forecast</h1>
+
+<form method="post">
+    <label for="city">Enter City:</label>
+    <input id="city" name="City" value="@Model.City" />
+    <button type="submit">Get Weather</button>
+
+    <p>@Model.rresponse</p>
+    </form>
