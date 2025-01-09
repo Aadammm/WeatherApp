@@ -4,19 +4,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace WeatherApp.Pages
 {
     public class WeatherModel : PageModel
     {
         readonly IConfiguration _config;
+        public WeatherData Weather;
         [BindProperty]
         public string City { get; set; }
+        public string Response { get; set; } = "No data";
 
-        private double Latitude;
-        private double Longitude;
-        private const string weatherApiUrl = "https://api.open-meteo.com/v1/forecast?";
-        public string rresponse = "x";
+        private double? Latitude = null;
+        private double? Longitude = null;
+        private const string baseApiUrl = "https://api.open-meteo.com/v1/";
         private WeatherData weatherData;
 
         public WeatherModel(IConfiguration configuration)
@@ -33,9 +35,16 @@ namespace WeatherApp.Pages
 
                 var locationService = new GoogleLocationService(googleApiKey);
                 var point = locationService.GetLatLongFromAddress(City);
-
-                Latitude = point.Latitude;
-                Longitude = point.Longitude;
+                if (point != null)
+                {
+                    Latitude = point.Latitude;
+                    Longitude = point.Longitude;
+                }
+                else
+                {
+                    Latitude = null;
+                    Longitude = null;
+                }
             }
         }
 
@@ -43,17 +52,21 @@ namespace WeatherApp.Pages
         {
             GetLocation();
 
-            string url = CreateEndPoint();
 
-            using HttpClient client = new();
-            var response = client.GetAsync(url).Result;
-
-            if (response.IsSuccessStatusCode)
+            if (Latitude != null && Longitude != null)
             {
-                rresponse = response.Content.ReadAsStringAsync().Result;
-            }
+                string url = CreateEndPoint();
+                using HttpClient client = new();
+                client.BaseAddress = new Uri(baseApiUrl);
+                var result = client.GetAsync(url).Result;
 
-            Console.WriteLine(response.Content);
+                if (result.IsSuccessStatusCode)
+                {
+                    Response = result.Content.ReadAsStringAsync().Result;
+                    Weather = JsonSerializer.Deserialize<WeatherData>(Response);
+
+                }
+            }
 
             return Page();
         }
@@ -61,19 +74,24 @@ namespace WeatherApp.Pages
         private string CreateEndPoint()
         {
             StringBuilder builder = new StringBuilder();
-            builder.Append(weatherApiUrl).Append("latitude=" + Latitude + "&longitude=" + Longitude + "&current=temperature_2m");
-            //return weatherApiUrl + "latitude=" + Latitude + "&longitude=" + Longitude + "&current=temperature_2m";
+            builder.Append("forecast?latitude=" + Latitude + "&longitude=" + Longitude + "&current=temperature_2m");
             return builder.ToString();
         }
 
 
+        public class CurrentWeather
+        {
+
+            [JsonPropertyName("temperature_2m")]
+            public double Temperature { get; set; }
+        }
 
         public class WeatherData
         {
 
+            [JsonPropertyName("current")]
+            public CurrentWeather Current { get; set; }
         }
-        //public WeatherData WeatherDataa { get; private set; }
-        //public string ErrorMessage { get; private set; }
 
         public void OnGet()
         {
