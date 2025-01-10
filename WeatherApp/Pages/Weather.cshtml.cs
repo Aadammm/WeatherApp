@@ -18,8 +18,7 @@ namespace WeatherApp.Pages
 
         private double? Latitude = null;
         private double? Longitude = null;
-        private const string baseApiUrl = "https://api.open-meteo.com/v1/";
-        private WeatherData weatherData;
+        private const string BaseApiUrl = "https://api.open-meteo.com/v1/";
 
         public WeatherModel(IConfiguration configuration)
         {
@@ -57,7 +56,7 @@ namespace WeatherApp.Pages
             {
                 string url = CreateEndPoint();
                 using HttpClient client = new();
-                client.BaseAddress = new Uri(baseApiUrl);
+                client.BaseAddress = new Uri(BaseApiUrl);
                 var result = client.GetAsync(url).Result;
 
                 if (result.IsSuccessStatusCode)
@@ -73,8 +72,8 @@ namespace WeatherApp.Pages
 
         private string CreateEndPoint()
         {
-            StringBuilder builder = new StringBuilder();
-            builder.Append("forecast?latitude=" + Latitude + "&longitude=" + Longitude + "&current=temperature_2m");
+            StringBuilder builder = new();
+            builder.Append("forecast?latitude=" + Latitude + "&longitude=" + Longitude + "&current=temperature_2m,relative_humidity_2m");
             return builder.ToString();
         }
 
@@ -84,6 +83,8 @@ namespace WeatherApp.Pages
 
             [JsonPropertyName("temperature_2m")]
             public double Temperature { get; set; }
+            [JsonPropertyName("relative_humidity_2m")]
+            public double Humidity { get; set; }
         }
 
         public class WeatherData
@@ -93,10 +94,10 @@ namespace WeatherApp.Pages
             public CurrentWeather Current { get; set; }
         }
 
-        public void OnGet()
-        {
+        //public void OnGet()
+        //{
 
-        }
+        //}
 
         //public async Task<IActionResult> OnPostAsync()
         //{

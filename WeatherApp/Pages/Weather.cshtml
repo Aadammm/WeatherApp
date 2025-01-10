@@ -1,8 +1,8 @@
 ﻿@page
 @model WeatherApp.Pages.WeatherModel
-@* @{
+@{
     ViewData["Title"] = "Weather";
-    } *@
+    }
 
 <h1>Weather Forecast</h1>
 
@@ -13,6 +13,13 @@
 
     @if (Model.Weather is not null)
     {
-        <p>Temperature for this @Model.City is @Model.Weather.Current.Temperature</p>
+        <h3>Data for @Model.City</h3>
+        <p>Temperature  is @Model.Weather.Current.Temperature °C</p>
+        <p>Humidity  is @Model.Weather.Current.Humidity %</p>
     }
+    else
+    {
+        <p>Please write correct name of place</p>
+    }
+
 </form>
