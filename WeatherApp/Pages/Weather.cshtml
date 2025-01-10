@@ -2,14 +2,29 @@
 @model WeatherApp.Pages.WeatherModel
 @{
     ViewData["Title"] = "Weather";
-    }
+}
 
 <h1>Weather Forecast</h1>
 
 <form method="post">
     <label for="city">Enter City:</label>
     <input id="city" name="City" value="@Model.City" />
-    <button type="submit">Get Weather</button>
+    <button type="submit">Get Weather</button><br />
+
+    <div class="row py-3 px-0">
+        <h2 data-svelte-h="svelte-qfb8d5">Current Weather</h2>
+        <div class="col-md-3 mb-2">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="temperature_2m_current" name="current" value="temperature_2m">
+                <label class="form-check-label" for="temperature_2m_current">Temperature (2 m)</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="relative_humidity_2m_current" name="current" value="relative_humidity_2m"> 
+                <label class="form-check-label" for="relative_humidity_2m_current">Relative Humidity (2 m)</label></div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="apparent_temperature_current" name="current" value="apparent_temperature"> <label class="form-check-label" for="apparent_temperature_current">Apparent Temperature</label></div><div class="form-check"><input class="form-check-input" type="checkbox" id="is_day_current" name="current" value="is_day"> <label class="form-check-label" for="is_day_current">Is Day or Night</label></div>
+        </div><div class="col-md-3 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="precipitation_current" name="current" value="precipitation"> <label class="form-check-label" for="precipitation_current">Precipitation</label></div><div class="form-check"><input class="form-check-input" type="checkbox" id="rain_current" name="current" value="rain"> <label class="form-check-label" for="rain_current">Rain</label></div><div class="form-check"><input class="form-check-input" type="checkbox" id="showers_current" name="current" value="showers"> <label class="form-check-label" for="showers_current">Showers</label></div><div class="form-check"><input class="form-check-input" type="checkbox" id="snowfall_current" name="current" value="snowfall"> <label class="form-check-label" for="snowfall_current">Snowfall</label></div></div><div class="col-md-3 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="weather_code_current" name="current" value="weather_code"> <label class="form-check-label" for="weather_code_current">Weather code</label></div><div class="form-check"><input class="form-check-input" type="checkbox" id="cloud_cover_current" name="current" value="cloud_cover"> <label class="form-check-label" for="cloud_cover_current">Cloud cover Total</label></div><div class="form-check"><input class="form-check-input" type="checkbox" id="pressure_msl_current" name="current" value="pressure_msl"> <label class="form-check-label" for="pressure_msl_current">Sealevel Pressure</label></div><div class="form-check"><input class="form-check-input" type="checkbox" id="surface_pressure_current" name="current" value="surface_pressure"> <label class="form-check-label" for="surface_pressure_current">Surface Pressure</label></div></div><div class="col-md-3 mb-2"><div class="form-check"><input class="form-check-input" type="checkbox" id="wind_speed_10m_current" name="current" value="wind_speed_10m"> <label class="form-check-label" for="wind_speed_10m_current">Wind Speed (10 m)</label></div><div class="form-check"><input class="form-check-input" type="checkbox" id="wind_direction_10m_current" name="current" value="wind_direction_10m"> <label class="form-check-label" for="wind_direction_10m_current">Wind Direction (10 m)</label></div><div class="form-check"><input class="form-check-input" type="checkbox" id="wind_gusts_10m_current" name="current" value="wind_gusts_10m"> <label class="form-check-label" for="wind_gusts_10m_current">Wind Gusts (10 m)</label></div></div> <div class="col-md-12" data-svelte-h="svelte-1tvytv1"><small class="text-muted">Note: Current conditions are based on 15-minutely weather model data. Every weather variable available in hourly data, is available as current condition as well.</small></div>
+    </div>
 
     @if (Model.Weather is not null)
     {
@@ -17,9 +32,10 @@
         <p>Temperature  is @Model.Weather.Current.Temperature °C</p>
         <p>Humidity  is @Model.Weather.Current.Humidity %</p>
     }
-    else
+    else if (ViewData["ErrorMessage"] is not null)
     {
-        <p>Please write correct name of place</p>
+        <p>@ViewData["ErrorMessage"]</p>
     }
+
 
 </form>
