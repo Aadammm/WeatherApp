@@ -3,47 +3,48 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace WeatherApp.Pages
 {
-    public class WeatherModel : PageModel
+    public class WeatherModel(IConfiguration configuration) : PageModel
     {
-        readonly IConfiguration _config;
-        public WeatherData Weather;
-
+        readonly IConfiguration _config = configuration;
+        public WeatherData Weather { get; private set; }
         [BindProperty]
-        public string City { get; set; }
+        public string City { get; set; } = "";
 
         private double? Latitude = null;
         private double? Longitude = null;
         private const string BaseApiUrl = "https://api.open-meteo.com/v1/";
-
-        public WeatherModel(IConfiguration configuration)
-        {
-            _config = configuration;
-        }
 
         void GetLocation()
         {
             if (!string.IsNullOrEmpty(City))
             {
                 string? googleApiKey = _config.GetSection("Google:ApiKey")?.Value;
-
-                var locationService = new GoogleLocationService(googleApiKey);
-                var point = locationService.GetLatLongFromAddress(City);
-                if (point is not  null)
+                try
                 {
-                    Latitude = point.Latitude;
-                    Longitude = point.Longitude;
+                    var locationService = new GoogleLocationService(googleApiKey);
+                    var point = locationService.GetLatLongFromAddress(City);
+                    if (point is not null)
+                    {
+                        Latitude = point.Latitude;
+                        Longitude = point.Longitude;
+                    }
+                    else
+                    {
+                        Latitude = null;
+                        Longitude = null;
+                        ViewData["ErrorMessage"] = "Could not retrieve weather data. Please check the city name.";
+                    }
                 }
-                else
+                catch (SocketException ex)
                 {
-                    Latitude = null;
-                    Longitude = null;
-                    ViewData["ErrorMessage"] = "Could not retrieve weather data. Please check the city name.";
+                    Console.WriteLine(ex.Message);
                 }
             }
         }
@@ -55,20 +56,27 @@ namespace WeatherApp.Pages
             if (Latitude != null && Longitude != null)
             {
                 string url = CreateApiEndPoint();
-                using HttpClient client = new();
-                client.BaseAddress = new Uri(BaseApiUrl);
-                var result = client.GetAsync(url).Result;
-
-                if (result.IsSuccessStatusCode)
+                try
                 {
-                    var stringResult = result.Content.ReadAsStringAsync().Result;
-                    Weather = JsonSerializer.Deserialize<WeatherData>(stringResult);
+                    using HttpClient client = new();
+                    client.BaseAddress = new Uri(BaseApiUrl);
+                    var result = client.GetAsync(url).Result;
+
+                    if (result.IsSuccessStatusCode)
+                    {
+                        var stringResult = result.Content.ReadAsStringAsync().Result;
+                        Weather = JsonSerializer.Deserialize<WeatherData>(stringResult);
+                        return Page();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message + "\nCant load data from weather api");
                     return Page();
                 }
             }
             return Page();
         }
-
         private string CreateApiEndPoint()
         {
             StringBuilder builder = new();
