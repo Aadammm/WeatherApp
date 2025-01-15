@@ -1,4 +1,4 @@
-# Weather App – A Simple Weather Lookup Application  
+## Weather App – A Simple Weather Lookup Application  
 
 ## Description  
 The "Weather App" is a very simply web application built with Razor Pages. Users enter a location name, and the app fetches real-time weather data for that location using external APIs.  
