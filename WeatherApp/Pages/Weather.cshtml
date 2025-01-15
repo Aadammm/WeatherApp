@@ -4,6 +4,7 @@
     ViewData["Title"] = "Weather";
 }
 
+
 <h1>Weather Forecast</h1>
 
 <form method="post">
@@ -11,16 +12,16 @@
     <input id="city" name="City" value="@Model.City" />
     <button type="submit">Get Weather</button><br />
 
-    <div class="row py-3 px-0">
+    @* <div class="row py-3 px-0">
         <h2 data-svelte-h="svelte-qfb8d5">Current Weather</h2>
         <div class="col-md-3 mb-2">
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="temperature_2m_current" name="current" value="temperature_2m">
-                <label class="form-check-label" for="temperature_2m_current">Temperature (2 m)</label>
+                <label class="form-check-label" for="temperature_2m_current">Temperature</label>
             </div>
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="relative_humidity_2m_current" name="current" value="relative_humidity_2m">
-                <label class="form-check-label" for="relative_humidity_2m_current">Relative Humidity (2 m)</label>
+                <label class="form-check-label" for="relative_humidity_2m_current">Humidity</label>
             </div>
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="apparent_temperature_current" name="current" value="apparent_temperature">
@@ -77,13 +78,31 @@
         <div class="col-md-12" data-svelte-h="svelte-1tvytv1">
             <small class="text-muted">Note: Current conditions are based on 15-minutely weather model data. Every weather variable available in hourly data, is available as current condition as well.</small>
         </div>
-    </div>
+    </div> *@
 
     @if (Model.Weather is not null)
     {
-        <h3>Data for @Model.City</h3>
-        <p>Temperature  is @Model.Weather.Current.Temperature °C</p>
-        <p>Humidity  is @Model.Weather.Current.Humidity %</p>
+        <div class="weather-container">
+            <div class="weather-card">
+                <h2>Now Weather Forecast</h2>
+                <p><strong>@Model.City</strong> @DateTime.Now.ToString("dd:MM")</p>
+                <p><strong>Temperature  is @Model.Weather.Current.Temperature °C</p>
+                <p><strong>Humidity  is @Model.Weather.Current.Humidity %</p>
+                <p><strong>@Model.Weather.Current.WeatherCondition</p>
+            </div>
+        </div>
+               <div class="weather-container">
+            @foreach (var weather in Model.WeatherResults)
+            {
+                <div class="weather-card">
+                    <h2>Weather Forecast</h2>
+                    <p><strong>Max Temperature:</strong> @weather.TemperatureMax °C</p>
+                    <p><strong>Min Temperature:</strong> @weather.TemperatureMin °C</p>
+                    <p><strong>Condition:</strong> @weather.WeatherCondition</p>
+                </div>
+            }
+        </div>
+
     }
     else if (ViewData["ErrorMessage"] is not null)
     {
@@ -92,3 +111,41 @@
 
 
 </form>
+<style>
+    .weather-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        padding: 20px;
+        background-color: #f0f8ff; /* Light blue background */
+    }
+
+    .weather-card {
+        background-color: #ffffff; /* White card background */
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        width: 300px;
+        text-align: center;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+        .weather-card h2 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .weather-card p {
+            font-size: 1rem;
+            color: #555;
+            margin: 5px 0;
+        }
+
+        .weather-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+</style>
