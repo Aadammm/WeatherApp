@@ -13,18 +13,19 @@ namespace WeatherApp.Pages
 {
     public class WeatherModel(IConfiguration configuration) : PageModel
     {
-        readonly IConfiguration _config = configuration;
+        private readonly IConfiguration _config = configuration;
         public WeatherParse? Weather { get; private set; }
-        public WeatherData[] WeatherResults { get; private set; }
+        public WeatherData[]? WeatherResults { get; private set; }
         [BindProperty]
         public string City { get; set; } = "";
-        private Dictionary<int, string> weatherCode;
-        private double? Latitude = null;
-        private double? Longitude = null;
+
+        private Dictionary<int, string> _weatherCode;
+        private double? _latitude = null;
+        private double? _longitude = null;
         private const string BaseApiUrl = "https://api.open-meteo.com/v1/";
 
 
-        void GetLocation()
+        private void GetLocation()
         {
             if (!string.IsNullOrEmpty(City))
             {
@@ -35,19 +36,19 @@ namespace WeatherApp.Pages
                     var point = locationService.GetLatLongFromAddress(City);
                     if (point is not null)
                     {
-                        Latitude = point.Latitude;
-                        Longitude = point.Longitude;
+                        _latitude = point.Latitude;
+                        _longitude = point.Longitude;
                     }
                     else
                     {
-                        Latitude = null;
-                        Longitude = null;
+                        _latitude = null;
+                        _longitude = null;
                         ViewData["ErrorMessage"] = "Could not retrieve weather data. Please check the city name.";
                     }
                 }
                 catch (SocketException ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine($"Socket exception: {ex.Message}");
                 }
             }
         }
@@ -56,7 +57,7 @@ namespace WeatherApp.Pages
         {
             GetLocation();
 
-            if (Latitude != null && Longitude != null)
+            if (_latitude != null && _longitude != null)
             {
                 string url = CreateApiEndPoint();
                 try
@@ -69,48 +70,53 @@ namespace WeatherApp.Pages
                     {
                         var stringResult = result.Content.ReadAsStringAsync().Result;
                         Weather = JsonSerializer.Deserialize<WeatherParse>(stringResult);
+                        ProcessWeatherData();
                     }
                 }
                 catch (Exception ex)
                 {
+                    ViewData["ErrorMessage"] = "Cannot load data from weather API.";
                     Console.WriteLine(ex.Message + "\nCant load data from weather api");
                     return Page();
                 }
 
-                MetodaOmg();
                 return Page();
             }
             return Page();
         }
 
-        private void MetodaOmg()
+        private void ProcessWeatherData()
         {
-            WeatherResults = Enumerable.Range(0, Weather.Daily.Time.Length)
+            int range = Weather.Daily.Time.Length;
+            WeatherResults = Enumerable.Range(0, range)
                            .Select(_ => new WeatherData())
                            .ToArray();
 
-            WeatherResults[0].Temperature = Weather.Current.Temperature;
-            WeatherResults[0].Humidity = Weather.Current.Humidity;
-            WeatherResults[0].WeatherCondition = GetWeatherCode(Weather.Current.Code);
-            
-            for (int i = 1; i < Weather.Daily.Time.Length; i++)
+            if (Weather.Current is not null)
+            {
+                WeatherResults[0].Temperature = Weather.Current.Temperature;
+                WeatherResults[0].Humidity = Weather.Current.Humidity;
+                WeatherResults[0].WeatherCondition = GetWeatherCode(Weather.Current.Code);
+            }
+
+            for (int i = 1; i < range; i++)
             {
                 WeatherResults[i].Time = Weather.Daily.Time[i];
                 WeatherResults[i].TemperatureMax = Weather.Daily.TemperatureMax[i];
                 WeatherResults[i].TemperatureMin = Weather.Daily.TemperatureMin[i];
-                WeatherResults[i].WeatherCondition = weatherCode[Weather.Daily.Code[i]];
+                WeatherResults[i].WeatherCondition = _weatherCode[Weather.Daily.Code[i]];
             }
         }
 
         private string CreateApiEndPoint()
         {
             StringBuilder builder = new();
-            builder.Append("forecast?latitude=" + Latitude + "&longitude=" + Longitude + "&current=temperature_2m,relative_humidity_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min");//&daily=weather_code,temperature_2m_max,temperature_2m_min
+            builder.Append("forecast?latitude=" + _latitude + "&longitude=" + _longitude + "&current=temperature_2m,relative_humidity_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min");
             return builder.ToString();
         }
         private string GetWeatherCode(int number)
         {
-           weatherCode = new()
+            _weatherCode = new()
             {
                       { 0, "Clear sky" },
                       { 1, "Mainly clear" },
@@ -142,7 +148,7 @@ namespace WeatherApp.Pages
                       { 99, "Thunderstorm with heavy hail" }
             };
 
-            return weatherCode[number];
+            return _weatherCode[number];
         }
 
         public class WeatherData
@@ -165,28 +171,28 @@ namespace WeatherApp.Pages
         public class DailyWeather
         {
             [JsonPropertyName("time")]
-            public DateTime[] Time { get; set; }
+            public DateTime[]? Time { get; set; }
 
             [JsonPropertyName("temperature_2m_max")]
-            public float[] TemperatureMax { get; set; }
+            public float[]? TemperatureMax { get; set; }
 
             [JsonPropertyName("temperature_2m_min")]
-            public float[] TemperatureMin { get; set; }
+            public float[]? TemperatureMin { get; set; }
 
             [JsonPropertyName("relative_humidity_2m")]
-            public float[] Humidity { get; set; }
+            public float[]? Humidity { get; set; }
             [JsonPropertyName("weather_code")]
-            public short[] Code { get; set; }
+            public short[]? Code { get; set; }
 
         }
 
         public class WeatherParse
         {
             [JsonPropertyName("current")]
-            public WeatherData Current { get; set; }
+            public WeatherData? Current { get; set; }
 
             [JsonPropertyName("daily")]
-            public DailyWeather Daily { get; set; }
+            public DailyWeather? Daily { get; set; }
 
         }
 
