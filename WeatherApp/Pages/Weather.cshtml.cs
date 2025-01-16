@@ -92,14 +92,13 @@ namespace WeatherApp.Pages
             WeatherResults[0].Temperature = Weather.Current.Temperature;
             WeatherResults[0].Humidity = Weather.Current.Humidity;
             WeatherResults[0].WeatherCondition = GetWeatherCode(Weather.Current.Code);
+            
             for (int i = 1; i < Weather.Daily.Time.Length; i++)
             {
                 WeatherResults[i].Time = Weather.Daily.Time[i];
                 WeatherResults[i].TemperatureMax = Weather.Daily.TemperatureMax[i];
                 WeatherResults[i].TemperatureMin = Weather.Daily.TemperatureMin[i];
-                //WeatherResults[i].Humidity = Weather.Daily.Humidity[i];
                 WeatherResults[i].WeatherCondition = weatherCode[Weather.Daily.Code[i]];
-                WeatherResults[i].Time = Weather.Daily.Time[i];
             }
         }
 

@@ -4,148 +4,215 @@
     ViewData["Title"] = "Weather";
 }
 
-
 <h1>Weather Forecast</h1>
 
 <form method="post">
-    <label for="city">Enter City:</label>
-    <input id="city" name="City" value="@Model.City" />
-    <button type="submit">Get Weather</button><br />
-
-    @* <div class="row py-3 px-0">
-        <h2 data-svelte-h="svelte-qfb8d5">Current Weather</h2>
-        <div class="col-md-3 mb-2">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="temperature_2m_current" name="current" value="temperature_2m">
-                <label class="form-check-label" for="temperature_2m_current">Temperature</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="relative_humidity_2m_current" name="current" value="relative_humidity_2m">
-                <label class="form-check-label" for="relative_humidity_2m_current">Humidity</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="apparent_temperature_current" name="current" value="apparent_temperature">
-                <label class="form-check-label" for="apparent_temperature_current">Apparent Temperature</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="is_day_current" name="current" value="is_day">
-                <label class="form-check-label" for="is_day_current">Is Day or Night</label>
-            </div>
-        </div>
-        <div class="col-md-3 mb-2">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="precipitation_current" name="current" value="precipitation">
-                <label class="form-check-label" for="precipitation_current">Precipitation</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="rain_current" name="current" value="rain">
-                <label class="form-check-label" for="rain_current">Rain</label>
-            </div><div class="form-check">
-                <input class="form-check-input" type="checkbox" id="showers_current" name="current" value="showers">
-                <label class="form-check-label" for="showers_current">Showers</label>
-            </div><div class="form-check">
-                <input class="form-check-input" type="checkbox" id="snowfall_current" name="current" value="snowfall">
-                <label class="form-check-label" for="snowfall_current">Snowfall</label>
-            </div>
-        </div><div class="col-md-3 mb-2">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="weather_code_current" name="current" value="weather_code">
-                <label class="form-check-label" for="weather_code_current">Weather code</label>
-            </div><div class="form-check">
-                <input class="form-check-input" type="checkbox" id="cloud_cover_current" name="current" value="cloud_cover">
-                <label class="form-check-label" for="cloud_cover_current">Cloud cover Total</label>
-            </div><div class="form-check">
-                <input class="form-check-input" type="checkbox" id="pressure_msl_current" name="current" value="pressure_msl">
-                <label class="form-check-label" for="pressure_msl_current">Sealevel Pressure</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="surface_pressure_current" name="current" value="surface_pressure">
-                <label class="form-check-label" for="surface_pressure_current">Surface Pressure</label>
-            </div>
-        </div>
-        <div class="col-md-3 mb-2">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="wind_speed_10m_current" name="current" value="wind_speed_10m">
-                <label class="form-check-label" for="wind_speed_10m_current">Wind Speed (10 m)</label>
-            </div><div class="form-check">
-                <input class="form-check-input" type="checkbox" id="wind_direction_10m_current" name="current" value="wind_direction_10m">
-                <label class="form-check-label" for="wind_direction_10m_current">Wind Direction (10 m)</label>
-            </div><div class="form-check">
-                <input class="form-check-input" type="checkbox" id="wind_gusts_10m_current" name="current" value="wind_gusts_10m">
-                <label class="form-check-label" for="wind_gusts_10m_current">Wind Gusts (10 m)</label>
-            </div>
-        </div>
-        <div class="col-md-12" data-svelte-h="svelte-1tvytv1">
-            <small class="text-muted">Note: Current conditions are based on 15-minutely weather model data. Every weather variable available in hourly data, is available as current condition as well.</small>
-        </div>
-    </div> *@
+    <div class="weather-form">
+        <label for="city">Enter City:</label>
+        <input id="city" name="City" value="@Model.City" />
+        <button type="submit">Get Weather</button>
+    </div>
 
     @if (Model.Weather is not null)
     {
         <div class="weather-container">
-            <div class="weather-card">
-                <h2>Now Weather Forecast</h2>
-                <p><strong>@Model.City</strong> @DateTime.Now.ToString("dd:MM")</p>
-                <p><strong>Temperature  is @Model.Weather.Current.Temperature °C</p>
-                <p><strong>Humidity  is @Model.Weather.Current.Humidity %</p>
-                <p><strong>@Model.Weather.Current.WeatherCondition</p>
+
+            <div class="today text-center mb-4">
+                <div class="today-header">
+                    <h2>@Model.City</h2>
+                    <p>@DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
+                </div>
+                <div class="today-content">
+                    <i class="@GetWeatherIconClass(Model.WeatherResults[0].WeatherCondition)" style="font-size: 48px;"></i>
+                    <div>
+                        <p><strong>Temperature:</strong> @Model.WeatherResults[0].Temperature °C</p>
+                        <p><strong>Humidity:</strong> @Model.WeatherResults[0].Humidity %</p>
+                        <p><strong>Condition:</strong> @Model.WeatherResults[0].WeatherCondition</p>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="row justify-content-start">
+                @for (int i = 1; i < Model.WeatherResults.Length; i++)
+                {
+                    <div class="col-6 col-md-2 mb-4">
+                        <div class="weather-card h-100">
+                            
+                            <i class="@GetWeatherIconClass(Model.WeatherResults[i].WeatherCondition)" style="font-size: 48px;"></i>
+                            <h4>@Model.WeatherResults[i].Time.ToString("dddd")</h4>
+                            <p><strong>Max Temp:</strong> @Model.WeatherResults[i].TemperatureMax °C</p>
+                            <p><strong>Min Temp:</strong> @Model.WeatherResults[i].TemperatureMin °C</p>
+                            <p><strong>Condition:</strong> @Model.WeatherResults[i].WeatherCondition</p>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
-               <div class="weather-container">
-            @foreach (var weather in Model.WeatherResults)
-            {
-                <div class="weather-card">
-                    <h2>Weather Forecast</h2>
-                    <p><strong>Max Temperature:</strong> @weather.TemperatureMax °C</p>
-                    <p><strong>Min Temperature:</strong> @weather.TemperatureMin °C</p>
-                    <p><strong>Condition:</strong> @weather.WeatherCondition</p>
-                </div>
-            }
-        </div>
-
     }
     else if (ViewData["ErrorMessage"] is not null)
     {
-        <p>@ViewData["ErrorMessage"]</p>
+        <p class="error-message">@ViewData["ErrorMessage"]</p>
+    }
+</form>
+
+<style>
+    :root {
+        --primary-color: #4caf50;
+        --text-light: #fff;
+        --text-dark: #333;
     }
 
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f0f8ff;
+    }
 
-</form>
-<style>
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: var(--primary-color);
+    }
+
+    .weather-form {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+        .weather-form input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 200px;
+        }
+
+        .weather-form button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--primary-color);
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+            .weather-form button:hover {
+                background-color: #45a049;
+                transform: scale(1.05);
+            }
+
     .weather-container {
         display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        justify-content: center;
-        padding: 20px;
-        background-color: #f0f8ff; /* Light blue background */
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .today {
+        text-align: center;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 50px;
+        background-color: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        height: 300px;
+        max-width: 300px;
+        margin-bottom: 20px;
+    }
+
+    .today-header h2 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .today-content img {
+        max-width: 100px;
+        margin-bottom: 10px;
     }
 
     .weather-card {
-        background-color: #ffffff; /* White card background */
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        padding: 20px;
-        width: 300px;
+        padding: 15px;
+        border-radius: 10px;
+        overflow: hidden;
+        background-color: #fff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         text-align: center;
-        transition: transform 0.3s, box-shadow 0.3s;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
-        .weather-card h2 {
-            font-size: 1.5rem;
-            color: #333;
-            margin-bottom: 15px;
+        .weather-card h4 {
+            font-size: 18px;
+            margin-bottom: 10px;
         }
 
         .weather-card p {
-            font-size: 1rem;
-            color: #555;
             margin: 5px 0;
+            font-size: 14px;
         }
 
-        .weather-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
+    .weather-row {
+        display: flex;
+        justify-content: flex-start;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .weather-card img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-bottom: 10px;
+    }
+
+    .error-message {
+        color: red;
+        text-align: center;
+        margin-top: 20px;
+    }
 </style>
+
+@functions {
+    private string GetWeatherIconClass(string weatherCondition)
+    {
+        return weatherCondition.ToLower()
+        switch
+        {
+            "clear sky" => "bi bi-sun",
+            "mainly clear" => "bi bi-sun",
+            "partly cloudy" => "bi bi-cloud-sun",
+            "overcast" => "bi bi-cloud",
+            "fog" => "bi bi-cloud-fog",
+            "depositing rime fog" => "bi bi-cloud-fog",
+            "drizzle: light intensity" => "bi bi-cloud-drizzle",
+            "drizzle: moderate intensity" => "bi bi-cloud-drizzle",
+            "drizzle: dense intensity" => "bi bi-cloud-drizzle",
+            "freezing drizzle: light intensity" => "bi bi-cloud-drizzle",
+            "freezing drizzle: dense intensity" => "bi bi-cloud-drizzle",
+            "rain: slight intensity" => "bi bi-cloud-rain",
+            "rain: moderate intensity" => "bi bi-cloud-rain",
+            "rain: heavy intensity" => "bi bi-cloud-rain",
+            "freezing rain: light intensity" => "bi bi-cloud-rain",
+            "freezing rain: heavy intensity" => "bi bi-cloud-rain",
+            "snow fall: slight intensity" => "bi bi-cloud-snow",
+            "snow fall: moderate intensity" => "bi bi-cloud-snow",
+            "snow fall: heavy intensity" => "bi bi-cloud-snow",
+            "snow grains" => "bi bi-cloud-snow",
+            "rain showers: slight intensity" => "bi bi-cloud-showers",
+            "rain showers: moderate intensity" => "bi bi-cloud-showers",
+            "rain showers: violent intensity" => "bi bi-cloud-showers",
+            "snow showers: slight intensity" => "bi bi-cloud-snow",
+            "snow showers: heavy intensity" => "bi bi-cloud-snow",
+            "thunderstorm: slight or moderate" => "bi bi-cloud-lightning",
+            "thunderstorm with slight hail" => "bi bi-cloud-lightning",
+            "thunderstorm with heavy hail" => "bi bi-cloud-lightning",
+            _ => "bi bi-question-circle"
+        };
+    }
+}
