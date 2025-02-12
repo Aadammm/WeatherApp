@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel;
+using System.Globalization;
 using System.Net.Sockets;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
@@ -75,8 +76,7 @@ namespace WeatherApp.Pages
                 }
                 catch (Exception ex)
                 {
-                    ViewData["ErrorMessage"] = "Cannot load data from weather API.";
-                    Console.WriteLine(ex.Message + "\nCant load data from weather api");
+                    ViewData["ErrorMessage"] = "Cannot load data from weather API.";                   
                     return Page();
                 }
 
@@ -110,8 +110,11 @@ namespace WeatherApp.Pages
 
         private string CreateApiEndPoint()
         {
+            string latitudeStr = _latitude?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string longitudeStr = _longitude?.ToString(System.Globalization.CultureInfo.InvariantCulture);
             StringBuilder builder = new();
-            builder.Append("forecast?latitude=" + _latitude + "&longitude=" + _longitude + "&current=temperature_2m,relative_humidity_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min");
+            builder.Append(BaseApiUrl);
+            builder.Append($"forecast?latitude={latitudeStr}&longitude={longitudeStr}&current=temperature_2m,relative_humidity_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min");
             return builder.ToString();
         }
         private string GetWeatherCode(int number)
