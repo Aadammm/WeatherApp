@@ -10,3 +10,7 @@ The "Weather App" is a very simply web application built with Razor Pages. Users
 - **Google Geocoding API** to fetch latitude and longitude.  
 - **Open-Meteo** to retrieve weather information based on geographic coordinates.  
 
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/131cc9ec-9a64-4eb5-b7ec-1ee41719596a" alt="Popis obrázka" width="300">
+</p>
